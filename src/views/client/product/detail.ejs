@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Chi tiết laptop tại Laptopshop" />
+    <title><%= product.name %> | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+  </head>
+  <body class="storefront">
+    <%- include('../layout/header') -%>
+    <main class="detail-page">
+      <div class="container">
+        <nav class="detail-breadcrumb" aria-label="Đường dẫn trang"><a href="/">Trang chủ</a><i class="fas fa-chevron-right"></i><a href="/#san-pham">Sản phẩm</a><i class="fas fa-chevron-right"></i><span><%= product.name %></span></nav>
+        <div class="row g-5 align-items-center">
+          <div class="col-lg-6"><div class="detail-image-panel"><span class="detail-image-label">LAPTOPSHOP COLLECTION</span><img src="/images/product/<%= product.image %>" alt="<%= product.name %>" /><span class="detail-image-corner"><i class="fas fa-laptop"></i></span></div></div>
+          <div class="col-lg-6">
+            <div class="detail-info">
+              <span class="section-kicker"><%= product.factory %> · LAPTOP</span>
+              <h1><%= product.name %></h1>
+              <p class="detail-lead"><%= product.shortDesc %></p>
+              <div class="detail-price"><small>Giá sản phẩm</small><strong><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price) %></strong></div>
+              <div class="detail-meta"><span><i class="fas fa-tag"></i> <%= product.factory %></span><span><i class="fas fa-info-circle"></i> Thông tin chi tiết bên dưới</span></div>
+              <!-- Form Thêm vào giỏ hàng với Số lượng mua -->
+              <form action="/add-product-to-cart/<%= product.id %>" method="post" class="detail-cart-form">
+                <div class="detail-quantity-box">
+                  <label class="detail-quantity-label" for="detailQuantity">Số lượng mua:</label>
+                  <div class="input-group quantity cart-quantity-stepper">
+                    <div class="input-group-btn">
+                      <button
+                        class="cart-stepper-btn btn-minus"
+                        type="button"
+                        aria-label="Giảm số lượng"
+                      >
+                        <i class="fas fa-minus"></i>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      id="detailQuantity"
+                      name="quantity"
+                      class="cart-stepper-input"
+                      value="1"
+                      min="1"
+                      max="99"
+                      aria-label="Số lượng sản phẩm"
+                    />
+                    <div class="input-group-btn">
+                      <button
+                        class="cart-stepper-btn btn-plus"
+                        type="button"
+                        aria-label="Tăng số lượng"
+                      >
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="detail-action-row">
+                  <button data-product-id="<%= product.id %>" type="submit" class="btnAddToCartDetail btn detail-add-cart-btn" aria-label="Thêm <%= product.name %> vào giỏ hàng">
+                    <i class="fas fa-cart-plus me-1" aria-hidden="true"></i>
+                    <span>Add to cart</span>
+                  </button>
+                  <a href="/#san-pham" class="detail-back-link">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    <span>Xem thêm sản phẩm</span>
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <section class="detail-description"><span class="section-kicker">THÔNG TIN SẢN PHẨM</span><h2>Chi tiết sản phẩm</h2><p><%= product.detailDesc %></p></section>
+      </div>
+    </main>
+    <%- include('../layout/footer') -%>
+    <a href="#" class="back-to-top" aria-label="Lên đầu trang"><i class="fas fa-arrow-up"></i></a>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/client/lib/easing/easing.min.js"></script>
+    <script src="/client/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/client/js/main.js"></script>
+  </body>
+</html>

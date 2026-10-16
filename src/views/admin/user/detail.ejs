@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="Dự án laptopshop" />
+    <title>Chỉnh sửa người dùng | Laptopshop</title>
+    <link href="/admin/css/styles.css" rel="stylesheet" />
+    <link href="/admin/css/modern.css" rel="stylesheet" />
+    <script
+      src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        const avatarFile = $("#avatarFile");
+        avatarFile.change(function (e) {
+          const imgURL = URL.createObjectURL(e.target.files[0]);
+          $("#avatarPreview").attr("src", imgURL);
+          $("#avatarPreview").css({ display: "block" });
+        });
+      });
+    </script>
+  </head>
+
+  <body class="sb-nav-fixed admin-user">
+    <%- include('../layout/header') -%>
+
+    <div id="layoutSidenav">
+      <%- include('../layout/sidenav') -%>
+      <div id="layoutSidenav_content">
+        <main>
+          <div class="container-fluid px-4">
+            <div class="admin-page-heading"><span class="admin-eyebrow">QUẢN LÝ</span><h1>Chỉnh sửa người dùng</h1><p>Cập nhật thông tin hiện có.</p></div>
+            <ol class="breadcrumb mb-4">
+              <li class="breadcrumb-item"><a href="/admin">Bảng điều khiển</a></li>
+              <li class="breadcrumb-item active">
+                <a href="/admin/user">Người dùng</a>
+              </li>
+            </ol>
+            <div class="row">
+              <div class="col-12 col-xl-9 mx-auto">
+                <div class="admin-form-card">
+                  <% if (typeof errors !== "undefined" && Array.isArray(errors) && errors.length) { %>
+                    <div class="alert alert-danger mb-3" role="alert">
+                      <strong>Vui lòng kiểm tra lại thông tin:</strong>
+                      <ul class="mb-0 mt-2 ps-3">
+                        <% errors.forEach((error) => { %>
+                          <li><%= error %></li>
+                        <% }); %>
+                      </ul>
+                    </div>
+                  <% } %>
+                  <h5>Thông tin người dùng</h5>
+                  <form
+                    action="/admin/handle-update-user"
+                    method="post"
+                    enctype="multipart/form-data"
+                  >
+                    <input type="hidden" name="id" value="<%= user.id %>">
+                    <div class="mb-3">
+                      <label class="form-label">Họ và tên</label>
+                      <input
+                        name="fullName"
+                        value="<%= user.fullName %>"
+                        type="text"
+                        class="form-control"
+                        placeholder="Nguyễn Văn A"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Email</label>
+                      <input
+                        name="username"
+                        value="<%= user.username %>"
+                        type="email"
+                        class="form-control"
+                        placeholder="name@example.com"
+                        disabled
+                      />
+                    </div>
+                    <div class="row">
+                      <div class="mb-3 col-md-6">
+                        <label class="form-label">Số điện thoại</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="phone"
+                          value="<%= user.phone%>"
+                        />
+                      </div>
+                      <div class="mb-3 col-md-6">
+                          <label class="form-label">Vai trò</label>
+                          <select name="role" class="form-select">
+                            <% roles.forEach((role,index) => { %>
+                            <option value="<%-role.id %>" <%= role.id === user.roleId ? 'selected' : '' %>>
+                              <%= role.name %>
+                            </option>
+                            <%})%>
+                          </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Địa chỉ</label>
+                      <input
+                        name="address"
+                        type="text"
+                        class="form-control"
+                        placeholder="Địa chỉ của người dùng"
+                        value="<%= user.address %>"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label for="avatarFile" class="form-label">Ảnh đại diện</label>
+                      <input
+                        class="form-control"
+                        type="file"
+                        id="avatarFile"
+                        name="avatar"
+                        accept=".png, .jpg, .jpeg"
+                      />
+                    </div>
+                    <% if (user.avatar) { %>
+                    <img
+                      style="max-height: 250px; display: block"
+                      alt="avatar preview"
+                      id="avatarPreview"
+                      src="/images/<%= user.avatar %>"
+                    />
+                    <% } else { %>
+                    <img
+                      style="max-height: 250px; display: none"
+                      alt="avatar preview"
+                      id="avatarPreview"
+                    />
+                    <% } %>
+                    <div class="mb-3">
+                      <button class="btn btn-primary" type="submit">
+                        Lưu thay đổi
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <%- include('../layout/footer') -%>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="/admin/js/scripts.js"></script>
+  </body>
+</html>

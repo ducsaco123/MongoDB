@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giỏ hàng | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+    />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+  </head>
+  <body class="storefront cart-page">
+    <%- include('../layout/header') -%>
+
+    <main class="cart-main">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="detail-breadcrumb" aria-label="Đường dẫn trang">
+          <a href="/">Trang chủ</a>
+          <i class="fas fa-chevron-right"></i>
+          <span>Giỏ hàng</span>
+        </nav>
+
+        <!-- Tiêu đề trang -->
+        <div class="cart-heading">
+          <span class="section-kicker">GIỎ HÀNG CỦA BẠN</span>
+          <h1>Chi tiết giỏ hàng</h1>
+          <p>Xem lại danh sách sản phẩm và tiến hành đặt hàng.</p>
+        </div>
+
+        <div class="row g-4 align-items-start">
+          <!-- Bảng danh sách sản phẩm -->
+          <div class="col-lg-8">
+            <div class="cart-table-card">
+              <div class="table-responsive">
+                <table class="table cart-table align-middle">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="cart-th-product">Sản phẩm</th>
+                      <th scope="col" class="cart-th-price">Đơn giá</th>
+                      <th scope="col" class="cart-th-quantity text-center">
+                        Số lượng
+                      </th>
+                      <th scope="col" class="cart-th-total text-end">
+                        Thành tiền
+                      </th>
+                      <th scope="col" class="cart-th-action text-center">
+                        Xóa
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (typeof cartDetails !== 'undefined' && cartDetails && cartDetails.length > 0) { %>
+                      <% cartDetails.forEach((cartDetail, index) => { %>
+                        <tr>
+                          <td>
+                            <div class="cart-product-cell">
+                              <a href="/product/<%= cartDetail.productId %>" class="cart-product-img">
+                                <img
+                                  src="/images/product/<%= cartDetail.product ? cartDetail.product.image : '' %>"
+                                  alt="<%= cartDetail.product ? cartDetail.product.name : 'Sản phẩm' %>"
+                                />
+                              </a>
+                              <div class="cart-product-info">
+                                <% if (cartDetail.product && cartDetail.product.factory) { %>
+                                  <span class="cart-product-brand"><%= cartDetail.product.factory %></span>
+                                <% } %>
+                                <a href="/product/<%= cartDetail.productId %>" class="cart-product-title">
+                                  <%= cartDetail.product ? cartDetail.product.name : 'Sản phẩm' %>
+                                </a>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="cart-price">
+                            <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(cartDetail.price) %>
+                          </td>
+                          <td>
+                            <!-- Khung số lượng đúng chuẩn selector của main.js: .quantity button, .btn-plus, .btn-minus, input với data-cart-detail-id và data-cart-detail-price -->
+                            <div class="input-group quantity cart-quantity-stepper mx-auto">
+                              <div class="input-group-btn">
+                                <button
+                                  class="cart-stepper-btn btn-minus"
+                                  type="button"
+                                  aria-label="Giảm số lượng"
+                                >
+                                  <i class="fas fa-minus"></i>
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                class="cart-stepper-input"
+                                value="<%= cartDetail.quantity %>"
+                                min="1"
+                                max="99"
+                                aria-label="Số lượng"
+                                data-cart-detail-id="<%= cartDetail.id %>"
+                                data-cart-detail-price="<%= cartDetail.price %>"
+                                data-cart-detail-index="<%= index %>"
+                              />
+                              <div class="input-group-btn">
+                                <button
+                                  class="cart-stepper-btn btn-plus"
+                                  type="button"
+                                  aria-label="Tăng số lượng"
+                                >
+                                  <i class="fas fa-plus"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="text-end">
+                            <!-- p[data-cart-detail-id] để main.js tự động cập nhật newPrice -->
+                            <p class="cart-total mb-0" data-cart-detail-id="<%= cartDetail.id %>">
+                              <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(cartDetail.price * cartDetail.quantity) %>
+                            </p>
+                          </td>
+                          <td class="text-center">
+                            <form action="/delete-cart/<%= cartDetail.id %>" method="post">
+
+                              <button
+                              class="cart-remove-btn"
+                              type="submit"
+                              aria-label="Xóa sản phẩm khỏi giỏ hàng"
+                              title="Xóa sản phẩm"
+                              >
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          </form>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr>
+                        <td colspan="5" class="text-center py-5">
+                          <div class="cart-empty-state">
+                            <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+                            <h4>Giỏ hàng của bạn đang trống</h4>
+                            <p class="text-muted mb-4">Hãy tiếp tục khám phá và chọn cho mình sản phẩm ưng ý nhé!</p>
+                            <a href="/#san-pham" class="cart-checkout-btn d-inline-flex px-4" style="width: auto;">
+                              Tiếp tục mua sắm
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+              <div class="cart-table-footer">
+                <a href="/#san-pham" class="cart-back-shop">
+                  <i class="fas fa-arrow-left me-2"></i> Tiếp tục chọn sản phẩm
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phần Checkout / Tóm tắt đơn hàng -->
+          <div class="col-lg-4">
+            <div class="cart-summary-card">
+              <h2 class="cart-summary-title">Tóm tắt đơn hàng</h2>
+
+              <div class="cart-summary-row">
+                <span>Tạm tính</span>
+                <!-- p[data-cart-total-price] để main.js tự động cập nhật tổng tiền -->
+                <p class="cart-summary-subtotal mb-0" data-cart-total-price="<%= typeof totalPrice !== 'undefined' ? totalPrice : 0 %>">
+                  <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(typeof totalPrice !== 'undefined' ? totalPrice : 0) %>
+                </p>
+              </div>
+
+              <div class="cart-summary-row">
+                <span>Phí vận chuyển</span>
+                <span class="cart-shipping-free">Miễn phí</span>
+              </div>
+
+              <div class="cart-summary-divider"></div>
+
+              <div class="cart-summary-total">
+                <div class="cart-total-label">
+                  <span>Tổng thanh toán</span>
+                  <small>Đã bao gồm VAT</small>
+                </div>
+                <!-- p[data-cart-total-price] để main.js cập nhật đồng thời -->
+                <p class="cart-total-price mb-0" data-cart-total-price="<%= typeof totalPrice !== 'undefined' ? totalPrice : 0 %>">
+                  <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(typeof totalPrice !== 'undefined' ? totalPrice : 0) %>
+                </p>
+              </div>
+              <form action="/handle-cart-to-checkout" method="post">
+                <div style="display: none">
+                  <input type="hidden" name="cartId" value="<%= cartId %>">
+                <% cartDetails.forEach( function (cartDetail, index) { %>
+                  <div class="mb-3">
+                      <div class="form-group">
+                          <label>Id:</label>
+                          <input class="form-control" type="text" value="<%=cartDetail.id %>"
+                              name="cartDetails[<%= index %>][id]" />
+                      </div>
+                      <div class="form-group">
+                          <label>Quantity:</label>
+                          <input class="form-control" type="text"
+                              value="<%=cartDetail.quantity %>"
+                              name="cartDetails[<%= index %>][quantity]"
+                              id="cartDetails[<%= index %>]" />
+                      </div>
+                  </div>
+                  <% }) %>
+                </div>
+                <button class="cart-checkout-btn">
+                  <span>Tiến hành thanh toán</span>
+                  <i class="fas fa-arrow-right"></i>
+                </button>
+
+              </form>
+
+              <div class="cart-summary-security">
+                <i class="fas fa-shield-alt"></i>
+                <span>Giao dịch an toàn & bảo mật 100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../layout/footer') -%>
+
+    <a href="#" class="back-to-top" aria-label="Lên đầu trang">
+      <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Scripts: Bao gồm jQuery, easing, owlcarousel và main.js để kích hoạt tính năng tính toán số lượng/giá tiền tự động -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/client/lib/easing/easing.min.js"></script>
+    <script src="/client/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/client/js/main.js"></script>
+  </body>
+</html>

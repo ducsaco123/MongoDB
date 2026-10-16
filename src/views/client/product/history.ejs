@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lịch sử mua hàng | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+    />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+  </head>
+  <body class="storefront history-page">
+    <%- include('../layout/header') -%>
+
+    <main class="history-main">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="detail-breadcrumb mb-4" aria-label="Đường dẫn trang">
+          <a href="/">Trang chủ</a>
+          <i class="fas fa-chevron-right"></i>
+          <span>Lịch sử mua hàng</span>
+        </nav>
+
+        <!-- Header tiêu đề trang -->
+        <div class="history-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <div>
+            <span class="section-kicker">TÀI KHOẢN CÁ NHÂN</span>
+            <h1 class="history-title mb-1">Lịch sử đơn hàng</h1>
+            <p class="history-subtitle text-muted mb-0">
+              Theo dõi và quản lý toàn bộ các đơn hàng bạn đã đặt tại Laptopshop.
+            </p>
+          </div>
+          <% if (typeof ordersHistory !== 'undefined' && ordersHistory && ordersHistory.length > 0) { %>
+            <div class="history-count-badge">
+              <i class="fas fa-receipt me-2 text-primary"></i>
+              <span>Tổng số: <strong><%= ordersHistory.length %></strong> đơn hàng</span>
+            </div>
+          <% } %>
+        </div>
+
+        <% if (typeof ordersHistory === 'undefined' || !ordersHistory || ordersHistory.length === 0) { %>
+          <!-- Trường hợp chưa có đơn hàng nào -->
+          <div class="history-empty-card">
+            <div class="history-empty-icon">
+              <i class="fas fa-box-open"></i>
+            </div>
+            <h3>Bạn chưa có đơn hàng nào</h3>
+            <p>Hãy khám phá các mẫu laptop mới nhất với giá cực kỳ ưu đãi tại cửa hàng của chúng tôi!</p>
+            <a href="/" class="btn btn-primary px-4 py-2 mt-2">
+              <i class="fas fa-shopping-bag me-2"></i>Khám phá sản phẩm ngay
+            </a>
+          </div>
+        <% } else { %>
+          <!-- Danh sách các đơn hàng -->
+          <div class="history-list">
+            <% ordersHistory.forEach((order) => { %>
+              <div class="history-order-card">
+                <!-- Header của mỗi đơn hàng -->
+                <div class="history-order-header">
+                  <div class="history-order-meta">
+                    <span class="history-order-id">
+                      <i class="fas fa-hashtag me-1"></i>Đơn hàng #<%= order.id %>
+                    </span>
+                    <span class="history-order-payment">
+                      <i class="far fa-credit-card me-1"></i>
+                      <%= order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : order.paymentMethod %>
+                    </span>
+                  </div>
+                  <div class="history-order-badges">
+                    <% if (order.status === 'PENDING') { %>
+                      <span class="history-badge history-badge--pending">
+                        <i class="fas fa-clock"></i> Đang chờ xử lý
+                      </span>
+                    <% } else if (order.status === 'COMPLETED') { %>
+                      <span class="history-badge history-badge--success">
+                        <i class="fas fa-check-circle"></i> Đã hoàn thành
+                      </span>
+                    <% } else if (order.status === 'CANCELLED') { %>
+                      <span class="history-badge history-badge--danger">
+                        <i class="fas fa-times-circle"></i> Đã hủy
+                      </span>
+                    <% } else if (order.status === 'SHIPPING') { %>
+                      <span class="history-badge history-badge--info">
+                        <i class="fas fa-shipping-fast"></i> Đang giao hàng
+                      </span>
+                    <% } else { %>
+                      <span class="history-badge history-badge--info">
+                        <%= order.status %>
+                      </span>
+                    <% } %>
+
+                    <% if (order.paymentStatus === 'PAID') { %>
+                      <span class="history-badge history-badge--paid">
+                        <i class="fas fa-shield-alt"></i> Đã thanh toán
+                      </span>
+                    <% } else { %>
+                      <span class="history-badge history-badge--unpaid">
+                        <i class="fas fa-exclamation-circle"></i> Chưa thanh toán
+                      </span>
+                    <% } %>
+                  </div>
+                </div>
+
+                <!-- Thông tin giao hàng tóm tắt -->
+                <div class="history-shipping-info">
+                  <div class="history-shipping-item">
+                    <i class="fas fa-user text-muted"></i>
+                    <span>Người nhận: <strong><%= order.receiverName %></strong> (<%= order.receiverPhone %>)</span>
+                  </div>
+                  <div class="history-shipping-item">
+                    <i class="fas fa-map-marker-alt text-muted"></i>
+                    <span>Địa chỉ: <%= order.receiverAddress %></span>
+                  </div>
+                </div>
+
+                <!-- Danh sách sản phẩm trong đơn hàng -->
+                <div class="history-items-table-wrap">
+                  <div class="table-responsive">
+                    <table class="table history-items-table align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th scope="col" style="min-width: 250px;">Sản phẩm</th>
+                          <th scope="col" class="text-center">Đơn giá</th>
+                          <th scope="col" class="text-center">Số lượng</th>
+                          <th scope="col" class="text-end">Thành tiền</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if (order.orderDetails && order.orderDetails.length > 0) { %>
+                          <% order.orderDetails.forEach((item) => { %>
+                            <tr>
+                              <td>
+                                <div class="d-flex align-items-center gap-3">
+                                  <div class="history-product-thumb">
+                                    <% if (item.product && item.product.image) { %>
+                                      <img src="/images/product/<%= encodeURIComponent(item.product.image) %>" alt="<%= item.product.name %>" />
+                                    <% } else { %>
+                                      <i class="fas fa-laptop text-muted"></i>
+                                    <% } %>
+                                  </div>
+                                  <div>
+                                    <strong class="history-product-name d-block">
+                                      <%= item.product ? item.product.name : 'Sản phẩm đã gỡ' %>
+                                    </strong>
+                                    <% if (item.product && item.product.factory) { %>
+                                      <small class="text-muted">Hãng: <%= item.product.factory %></small>
+                                    <% } %>
+                                  </div>
+                                </div>
+                              </td>
+                              <td class="text-center font-monospace">
+                                <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(item.price)) %>
+                              </td>
+                              <td class="text-center">
+                                <span class="badge bg-light text-dark border px-2 py-1">x <%= item.quantity %></span>
+                              </td>
+                              <td class="text-end fw-bold text-primary font-monospace">
+                                <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(item.price) * item.quantity) %>
+                              </td>
+                            </tr>
+                          <% }) %>
+                        <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Footer đơn hàng: Tổng tiền -->
+                <div class="history-order-footer">
+                  <div class="history-order-footer-left text-muted small">
+                    <i class="fas fa-headset me-1"></i>Hỗ trợ đơn hàng: Hotline <strong>1900 1234</strong>
+                  </div>
+                  <div class="history-order-footer-right">
+                    <span class="history-total-label">Tổng thanh toán:</span>
+                    <strong class="history-total-price">
+                      <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.totalPrice)) %>
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </main>
+
+    <%- include('../layout/footer') -%>
+    <script src="/client/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

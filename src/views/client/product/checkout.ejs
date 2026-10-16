@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thanh toán đơn hàng | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+    />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+  </head>
+  <body class="storefront checkout-page">
+    <%- include('../layout/header') -%>
+
+    <main class="checkout-main">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="detail-breadcrumb" aria-label="Đường dẫn trang">
+          <a href="/">Trang chủ</a>
+          <i class="fas fa-chevron-right"></i>
+          <a href="/cart-detail">Giỏ hàng</a>
+          <i class="fas fa-chevron-right"></i>
+          <span>Thanh toán</span>
+        </nav>
+
+        <!-- Tiêu đề trang -->
+        <div class="cart-heading">
+          <span class="section-kicker">XÁC NHẬN ĐƠN HÀNG</span>
+          <h1>Thanh toán &amp; Đặt hàng</h1>
+          <p>Vui lòng kiểm tra lại đơn hàng và điền thông tin giao nhận bên dưới.</p>
+        </div>
+
+        <% if (!cartDetails || cartDetails.length === 0) { %>
+          <!-- Trường hợp giỏ hàng trống -->
+          <div class="checkout-card text-center py-5">
+            <div class="cart-empty-state">
+              <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+              <h4>Giỏ hàng của bạn đang trống</h4>
+              <p class="text-muted mb-4">Bạn chưa có sản phẩm nào để tiến hành thanh toán.</p>
+              <a href="/#san-pham" class="cart-checkout-btn d-inline-flex px-4" style="width: auto;">
+                <i class="fas fa-arrow-left me-2"></i> Quay lại mua sắm
+              </a>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="row g-4 align-items-start">
+            <!-- Cột trái: Form thông tin giao nhận & phương thức thanh toán -->
+            <div class="col-lg-7">
+              <form action="/place-order" method="POST" id="checkoutForm" class="checkout-form">
+                <!-- Card 1: Thông tin giao nhận -->
+                 <input
+                          type="hidden"
+                          name="totalPrice"
+                          value="<%= totalPrice %>"
+                        />
+                <div class="checkout-card">
+                  <div class="checkout-card-header">
+                    <h2 class="checkout-card-title">
+                      <i class="fas fa-map-marker-alt"></i>
+                      1. Thông tin người nhận
+                    </h2>
+                    <p class="checkout-card-subtitle">
+                      Địa chỉ nhận kiện hàng và thông tin liên hệ khi shipper giao tới.
+                    </p>
+                  </div>
+
+                  <div class="row g-3">
+                    <div class="col-md-6 checkout-form-group">
+                      <label for="receiverName" class="checkout-label">
+                        Họ và tên người nhận <span class="required">*</span>
+                      </label>
+                      <div class="checkout-input-wrap">
+                        <i class="fas fa-user checkout-input-icon"></i>
+                        <input
+                          type="text"
+                          id="receiverName"
+                          name="receiverName"
+                          class="checkout-input"
+                          placeholder="Ví dụ: Nguyễn Văn A"
+                          value="<%= typeof user !== 'undefined' && user?.fullName ? user.fullName : '' %>"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-md-6 checkout-form-group">
+                      <label for="receiverPhone" class="checkout-label">
+                        Số điện thoại nhận hàng <span class="required">*</span>
+                      </label>
+                      <div class="checkout-input-wrap">
+                        <i class="fas fa-phone-alt checkout-input-icon"></i>
+                        <input
+                          type="tel"
+                          id="receiverPhone"
+                          name="receiverPhone"
+                          class="checkout-input"
+                          placeholder="Ví dụ: 0912 345 678"
+                          value="<%= typeof user !== 'undefined' && user?.phone ? user.phone : '' %>"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12 checkout-form-group">
+                      <label for="receiverAddress" class="checkout-label">
+                        Địa chỉ nhận hàng chi tiết <span class="required">*</span>
+                      </label>
+                      <div class="checkout-input-wrap">
+                        <i class="fas fa-home checkout-input-icon"></i>
+                        <input
+                          type="text"
+                          id="receiverAddress"
+                          name="receiverAddress"
+                          class="checkout-input"
+                          placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                          value="<%= typeof user !== 'undefined' && user?.address ? user.address : '' %>"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12 checkout-form-group mb-0">
+                      <label for="receiverNote" class="checkout-label">
+                        Ghi chú cho đơn hàng <span class="text-muted fw-normal">(Không bắt buộc)</span>
+                      </label>
+                      <div class="checkout-input-wrap">
+                        <textarea
+                          id="receiverNote"
+                          name="receiverNote"
+                          class="checkout-input checkout-textarea"
+                          rows="2"
+                          placeholder="Ví dụ: Giao vào giờ hành chính, gọi trước khi đến..."
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Phương thức vận chuyển -->
+                <div class="checkout-card">
+                  <div class="checkout-card-header">
+                    <h2 class="checkout-card-title">
+                      <i class="fas fa-shipping-fast"></i>
+                      2. Phương thức vận chuyển
+                    </h2>
+                    <p class="checkout-card-subtitle">
+                      Đơn vị giao vận tiêu chuẩn áp dụng cho thiết bị điện tử.
+                    </p>
+                  </div>
+
+                  <div class="checkout-shipping-pill">
+                    <div class="checkout-shipping-info">
+                      <i class="fas fa-truck"></i>
+                      <div>
+                        <div class="checkout-shipping-name">Giao hàng nhanh tiêu chuẩn</div>
+                        <p class="checkout-shipping-desc">Thời gian dự kiến: 2 - 4 ngày làm việc</p>
+                      </div>
+                    </div>
+                    <span class="checkout-method-badge">Miễn phí</span>
+                  </div>
+                </div>
+
+                <!-- Card 3: Phương thức thanh toán -->
+                <div class="checkout-card">
+                  <div class="checkout-card-header">
+                    <h2 class="checkout-card-title">
+                      <i class="fas fa-credit-card"></i>
+                      3. Phương thức thanh toán
+                    </h2>
+                    <p class="checkout-card-subtitle">
+                      Chọn hình thức thanh toán thuận tiện nhất cho bạn.
+                    </p>
+                  </div>
+
+                  <div class="checkout-method-list">
+                    <!-- Option 1: COD -->
+                    <label class="checkout-method-option selected" for="paymentCOD">
+                      <input
+                        type="radio"
+                        id="paymentCOD"
+                        name="paymentMethod"
+                        value="COD"
+                        class="checkout-method-radio"
+                        checked
+                      />
+                      <div class="checkout-method-content">
+                        <div class="checkout-method-header">
+                          <span class="checkout-method-name">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Thanh toán khi nhận hàng (COD)
+                          </span>
+                          <span class="checkout-method-badge">Phổ biến</span>
+                        </div>
+                        <p class="checkout-method-desc">
+                          Thanh toán trực tiếp bằng tiền mặt cho nhân viên giao hàng sau khi kiểm tra kiện hàng.
+                        </p>
+                      </div>
+                    </label>
+
+                    <!-- Option 2: Chuyển khoản ngân hàng -->
+                    <label class="checkout-method-option" for="paymentBanking">
+                      <input
+                        type="radio"
+                        id="paymentBanking"
+                        name="paymentMethod"
+                        value="BANKING"
+                        class="checkout-method-radio"
+                      />
+                      <div class="checkout-method-content">
+                        <div class="checkout-method-header">
+                          <span class="checkout-method-name">
+                            <i class="fas fa-qrcode"></i>
+                            Chuyển khoản ngân hàng (VietQR)
+                          </span>
+                          <span class="badge bg-light text-primary border">Tiện lợi</span>
+                        </div>
+                        <p class="checkout-method-desc">
+                          Quét mã VietQR nhanh chóng qua ứng dụng Banking sau khi xác nhận đơn hàng.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="checkout-footer-nav">
+                  <a href="/cart-detail" class="checkout-back-link">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại giỏ hàng
+                  </a>
+                </div>
+              </form>
+            </div>
+
+            <!-- Cột phải: Tóm tắt đơn hàng & Xác nhận đặt hàng -->
+            <div class="col-lg-5">
+              <div class="checkout-summary-card">
+                <div class="checkout-summary-head">
+                  <h2 class="checkout-summary-title">
+                    Đơn hàng (<%= cartDetails.length %>)
+                  </h2>
+                  <a href="/cart-detail" class="checkout-edit-link">
+                    <i class="fas fa-pen fa-xs"></i> Sửa giỏ hàng
+                  </a>
+                </div>
+
+                <!-- Danh sách sản phẩm rút gọn -->
+                <div class="checkout-items-list">
+                  <% cartDetails.forEach((cartDetail) => { %>
+                    <div class="checkout-item">
+                      <div class="checkout-item-thumb">
+                        <img
+                          src="/images/product/<%= cartDetail.product ? cartDetail.product.image : '' %>"
+                          alt="<%= cartDetail.product ? cartDetail.product.name : 'Sản phẩm' %>"
+                        />
+                        <span class="checkout-item-qty"><%= cartDetail.quantity %></span>
+                      </div>
+                      <div class="checkout-item-info">
+                        <% if (cartDetail.product && cartDetail.product.factory) { %>
+                          <span class="checkout-item-brand"><%= cartDetail.product.factory %></span>
+                        <% } %>
+                        <a href="/product/<%= cartDetail.productId %>" class="checkout-item-name" title="<%= cartDetail.product ? cartDetail.product.name : '' %>">
+                          <%= cartDetail.product ? cartDetail.product.name : 'Sản phẩm' %>
+                        </a>
+                        <span class="checkout-item-unit">
+                          <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(cartDetail.price) %> &times; <%= cartDetail.quantity %>
+                        </span>
+                      </div>
+                      <div class="checkout-item-total">
+                        <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(cartDetail.price * cartDetail.quantity) %>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+
+                <!-- Chi tiết giá tiền -->
+                <div class="cart-summary-divider"></div>
+
+                <div class="cart-summary-row">
+                  <span>Tạm tính</span>
+                  <strong class="cart-summary-subtotal">
+                    <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(typeof totalPrice !== 'undefined' ? totalPrice : 0) %>
+                  </strong>
+                </div>
+
+                <div class="cart-summary-row">
+                  <span>Phí giao hàng</span>
+                  <span class="cart-shipping-free">Miễn phí</span>
+                </div>
+
+                <div class="cart-summary-divider"></div>
+
+                <div class="cart-summary-total">
+                  <div class="cart-total-label">
+                    <span>Tổng thanh toán</span>
+                    <small>Đã bao gồm thuế VAT</small>
+                  </div>
+                  <p class="cart-total-price mb-0" data-cart-total-price="<%= typeof totalPrice !== 'undefined' ? totalPrice : 0 %>">
+                    <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(typeof totalPrice !== 'undefined' ? totalPrice : 0) %>
+                  </p>
+                </div>
+
+                <!-- Nút Submit Form -->
+                <button type="submit" form="checkoutForm" class="checkout-submit-btn">
+                  <span>Xác nhận đặt hàng</span>
+                  <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <!-- Cam kết bảo mật & quyền lợi -->
+                <div class="checkout-guarantees">
+                  <div class="checkout-guarantee-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Bảo mật giao dịch thanh toán 100%</span>
+                  </div>
+                  <div class="checkout-guarantee-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Sản phẩm chính hãng, đầy đủ phụ kiện &amp; bảo hành</span>
+                  </div>
+                  <div class="checkout-guarantee-item">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Đổi trả 1-1 trong 30 ngày nếu có lỗi phần cứng</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </main>
+
+    <%- include('../layout/footer') -%>
+
+    <a href="#" class="back-to-top" aria-label="Lên đầu trang">
+      <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/client/lib/easing/easing.min.js"></script>
+    <script src="/client/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/client/js/main.js"></script>
+    <script>
+      // Xử lý hiệu ứng chọn phương thức thanh toán
+      document.querySelectorAll('input[name="paymentMethod"]').forEach((radio) => {
+        radio.addEventListener('change', function () {
+          document.querySelectorAll('.checkout-method-option').forEach((opt) => {
+            opt.classList.remove('selected');
+          });
+          const parentOption = this.closest('.checkout-method-option');
+          if (parentOption) {
+            parentOption.classList.add('selected');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

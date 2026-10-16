@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Máy chủ đang gặp sự cố gián đoạn trên Laptopshop" />
+    <title>500 - Lỗi máy chủ | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+    <link href="/client/css/404.css" rel="stylesheet" />
+  </head>
+  <body class="storefront not-found-page error-500">
+    <%- include('../client/layout/header') -%>
+    <main class="not-found-main">
+      <div class="container">
+        <section class="not-found-card" aria-labelledby="not-found-title">
+          <div class="not-found-visual" aria-hidden="true">
+            <span class="not-found-number">500</span>
+            <div class="not-found-laptop">
+              <div class="not-found-screen"><i class="fas fa-tools"></i></div>
+              <div class="not-found-keyboard"></div>
+            </div>
+            <span class="not-found-badge"><i class="fas fa-exclamation-triangle"></i> Sự cố máy chủ</span>
+          </div>
+          <div class="not-found-content">
+            <span class="not-found-kicker">SỰ CỐ HỆ THỐNG</span>
+            <h1 id="not-found-title">Máy chủ đang gặp sự cố gián đoạn.</h1>
+            <p>Hệ thống gặp sự cố ngoài ý muốn trong quá trình xử lý yêu cầu của bạn. Đội ngũ kỹ thuật đã ghi nhận và đang xử lý, vui lòng tải lại trang hoặc quay về trang chủ.</p>
+            <div class="not-found-actions">
+              <a class="not-found-primary" href="/"><i class="fas fa-home" aria-hidden="true"></i> Về trang chủ</a>
+              <button class="not-found-secondary" type="button" onclick="window.location.reload()"><i class="fas fa-redo-alt" aria-hidden="true"></i> Thử lại trang</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include('../client/layout/footer') -%>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="Dự án laptopshop" />
+    <title>Người dùng | Laptopshop</title>
+    <link href="/admin/css/styles.css" rel="stylesheet" />
+    <link href="/admin/css/modern.css" rel="stylesheet" />
+    <script
+      src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body class="sb-nav-fixed admin-user">
+    <%- include('../layout/header') -%>
+
+    <div id="layoutSidenav">
+      <%- include('../layout/sidenav') -%>
+      <div id="layoutSidenav_content">
+        <main>
+          <div class="container-fluid px-4">
+            <div class="admin-page-heading"><span class="admin-eyebrow">QUẢN LÝ</span><h1>Người dùng</h1><p>Xem và cập nhật thông tin người dùng của cửa hàng.</p></div>
+              <div class="admin-content-card">
+                <div class="admin-card-heading"><div><h2>Danh sách người dùng</h2><span><%= users.length %> người dùng</span></div><a href="/admin/create-user" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Thêm người dùng</a></div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Họ tên</th>
+                      <th>Email</th>
+                      <th>Địa chỉ</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% for (let i = 0; i < users.length; i++){ %>
+                      <tr>
+                        <td><%= users[i].id %></td>
+                        <td><%= users[i].fullName %></td>
+                        <td><%= users[i].username %></td>
+                        <td><%= users[i].address %></td>
+                        <td>
+                          <div class="admin-table-actions">
+                            <form action="/admin/handle-view-user/<%= users[i].id %>" method="GET">
+                              <button class="btn btn-outline-primary btn-sm" type="submit">Chi tiết</button>
+                            </form>
+                            <form action="/admin/handle-delete-user/<%= users[i].id %>" method="POST">
+                              <button class="btn btn-outline-danger btn-sm" type="submit">Xóa</button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    <% } %>
+                    <% if (!users.length) { %><tr><td colspan="5" class="admin-table-empty">Chưa có người dùng. Hãy thêm người dùng đầu tiên.</td></tr><% } %>
+                  </tbody>
+                  </table>
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item">
+                        <a class="<%= page === 1 ? 'disabled page-link' : 'page-link' %>" href="/admin/user?page=<%= page - 1 %>" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                        </a>
+                      </li>
+                      <% for (let i = 1; i <= totalPages; i++){%>
+                      <li class="page-item"><a class="<%= page === i ? 'active page-link' : 'page-link' %>" href="/admin/user?page=<%= i %>"><%= i %></a></li>
+                      <% } %>
+                      <li class="page-item">
+                        <a class="<%= page === totalPages ? 'disabled page-link' : 'page-link' %>" href="/admin/user?page=<%= page + 1 %>" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+          </div>
+        </main>
+        <%- include('../layout/footer') -%>
+      </div>
+    </div>
+    
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="/admin/js/scripts.js"></script>
+  </body>
+</html>

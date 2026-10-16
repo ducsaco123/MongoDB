@@ -1,0 +1,120 @@
+<header class="site-header fixed-top">
+  <div class="site-topbar d-none d-md-block">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span
+        ><i class="fas fa-laptop me-2"></i>Không gian dành cho người yêu công
+        nghệ</span
+      >
+      <span>Khám phá laptop phù hợp với bạn</span>
+    </div>
+  </div>
+  <nav class="navbar navbar-expand-lg site-nav" aria-label="Điều hướng chính">
+    <div class="container">
+      <a class="navbar-brand site-brand" href="/"
+        ><span class="brand-mark"><i class="fas fa-laptop"></i></span
+        ><span>Laptop<span class="brand-accent">shop</span></span></a
+      >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarCollapse"
+        aria-controls="navbarCollapse"
+        aria-expanded="false"
+        aria-label="Mở menu"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="navbar-nav ms-auto align-items-lg-center">
+          <a href="/" class="nav-link">Trang chủ</a>
+          <a href="/product" class="nav-link">Sản phẩm</a>
+          
+          <a href="/cart-detail" class="site-cart" aria-label="Giỏ hàng của bạn, hiện có <%= user?.sumCart ?? 0 %> sản phẩm" title="Giỏ hàng">
+            <span class="site-cart-icon-wrapper" aria-hidden="true">
+              <i class="fas fa-shopping-bag"></i>
+              <span class="site-cart-badge" id="sumCart"><%= user?.sumCart ?? 0 %></span>
+            </span>
+            <span class="site-cart-text d-lg-none">
+              <span>Giỏ hàng</span>
+              <small><%= user?.sumCart ?? 0 %> sản phẩm</small>
+            </span>
+          </a>
+          <div class="dropdown site-account">
+            <% if (typeof user !== 'undefined' && user) { %>
+              <button class="site-account-trigger" type="button" id="siteAccountToggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mở menu tài khoản của <%= user.fullName || user.username %>">
+                <span class="site-account-avatar" aria-hidden="true">
+                  <% if (user.avatar) { %>
+                    <img src="/images/<%= encodeURIComponent(user.avatar) %>" alt="" />
+                  <% } else { %>
+                    <i class="fas fa-user"></i>
+                  <% } %>
+                </span>
+                <span class="site-account-trigger-text"><small>Xin chào</small><strong><%= user.fullName || user.username %></strong></span>
+                <i class="fas fa-chevron-down site-account-chevron" aria-hidden="true"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end site-account-menu" aria-labelledby="siteAccountToggle">
+                <div class="site-account-summary">
+                  <span class="site-account-avatar site-account-avatar--large" aria-hidden="true">
+                    <% if (user.avatar) { %>
+                      <img src="/images/<%= encodeURIComponent(user.avatar) %>" alt="" />
+                    <% } else { %>
+                      <i class="fas fa-user"></i>
+                    <% } %>
+                  </span>
+                  <div class="site-account-summary-text">
+                    <span>Đã đăng nhập</span>
+                    <strong><%= user.fullName || user.username %></strong>
+                    <small><%= user.username %></small>
+                  </div>
+                </div>
+                <div class="site-account-nav">
+                  <% if (typeof user.role !== 'undefined' && user.role && user.role.name === 'ADMIN') { %>
+                    <a href="/admin" class="site-account-nav-item">
+                      <span class="site-account-nav-icon site-account-nav-icon--admin" aria-hidden="true">
+                        <i class="fas fa-user-shield"></i>
+                      </span>
+                      <span class="site-account-nav-text">
+                        <strong>Trang quản trị</strong>
+                        <small>Quản lý hệ thống</small>
+                      </span>
+                      <i class="fas fa-chevron-right site-account-nav-arrow" aria-hidden="true"></i>
+                    </a>
+                  <% } %>
+                  <a href="/order-history" class="site-account-nav-item">
+                    <span class="site-account-nav-icon" aria-hidden="true">
+                      <i class="fas fa-history"></i>
+                    </span>
+                    <span class="site-account-nav-text">
+                      <strong>Lịch sử mua hàng</strong>
+                      <small>Xem đơn hàng đã đặt</small>
+                    </span>
+                    <i class="fas fa-chevron-right site-account-nav-arrow" aria-hidden="true"></i>
+                  </a>
+                </div>
+                <form class="site-account-logout-form" method="post" action="/logout">
+                  <button class="site-account-logout" type="submit"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Đăng xuất</button>
+                </form>
+              </div>
+            <% } else { %>
+              <button class="site-account-trigger site-account-trigger--guest" type="button" id="siteAccountToggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mở menu tài khoản">
+                <span class="site-account-avatar" aria-hidden="true"><i class="fas fa-user"></i></span>
+                <span class="site-account-trigger-text"><small>Tài khoản</small><strong>Đăng nhập</strong></span>
+                <i class="fas fa-chevron-down site-account-chevron" aria-hidden="true"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end site-account-menu" aria-labelledby="siteAccountToggle">
+                <div class="site-account-guest-intro">
+                  <span class="site-account-guest-icon" aria-hidden="true"><i class="fas fa-user-circle"></i></span>
+                  <strong>Chào mừng đến Laptopshop</strong>
+                  <p>Đăng nhập để tiếp tục trải nghiệm của bạn.</p>
+                </div>
+                <a class="site-account-primary a-login" href="/login">Đăng nhập <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                <a class="site-account-secondary" href="/register">Tạo tài khoản mới</a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

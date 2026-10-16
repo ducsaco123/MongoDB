@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt hàng thành công | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+    />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+  </head>
+  <body class="storefront thanks-page">
+    <%- include('../layout/header') -%>
+
+    <main class="thanks-main">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="detail-breadcrumb justify-content-center" aria-label="Đường dẫn trang">
+          <a href="/">Trang chủ</a>
+          <i class="fas fa-chevron-right"></i>
+          <a href="/checkout">Thanh toán</a>
+          <i class="fas fa-chevron-right"></i>
+          <span>Đặt hàng thành công</span>
+        </nav>
+
+        <!-- Thẻ chúc mừng đặt hàng thành công -->
+        <div class="thanks-card">
+          <!-- Biểu tượng tích xanh thành công -->
+          <div class="thanks-icon-wrap">
+            <div class="thanks-icon-circle">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+
+          <span class="thanks-kicker">XÁC NHẬN THÀNH CÔNG</span>
+          <h1 class="thanks-title">Cảm ơn bạn đã đặt hàng!</h1>
+          <p class="thanks-subtitle">
+            Đơn hàng của bạn đã được ghi nhận trên hệ thống Laptopshop. Chúng tôi đang tiến hành xử lý, đóng gói và sẽ sớm bàn giao cho đơn vị vận chuyển.
+          </p>
+
+          <!-- Tiến trình trạng thái đơn hàng (Timeline) -->
+          <div class="thanks-tracker">
+            <div class="thanks-tracker-step completed">
+              <div class="thanks-step-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <span class="thanks-step-label">Đặt hàng<br />thành công</span>
+            </div>
+
+            <div class="thanks-tracker-step active">
+              <div class="thanks-step-icon">
+                <i class="fas fa-box-open"></i>
+              </div>
+              <span class="thanks-step-label">Xác nhận &amp;<br />đóng gói</span>
+            </div>
+
+            <div class="thanks-tracker-step">
+              <div class="thanks-step-icon">
+                <i class="fas fa-shipping-fast"></i>
+              </div>
+              <span class="thanks-step-label">Bàn giao<br />vận chuyển</span>
+            </div>
+
+            <div class="thanks-tracker-step">
+              <div class="thanks-step-icon">
+                <i class="fas fa-home"></i>
+              </div>
+              <span class="thanks-step-label">Giao hàng<br />thành công</span>
+            </div>
+          </div>
+
+          <!-- Khung thông tin giao nhận tóm tắt -->
+          <div class="thanks-info-box">
+            <div class="thanks-info-title">
+              <i class="fas fa-receipt"></i>
+              Thông tin đơn hàng
+            </div>
+            <div class="thanks-info-grid">
+              <div class="thanks-info-item">
+                <small>Khách hàng</small>
+                <span><%= typeof user !== 'undefined' && user?.fullName ? user.fullName : 'Quý khách' %></span>
+              </div>
+              <div class="thanks-info-item">
+                <small>Phương thức thanh toán</small>
+                <span>Thanh toán khi nhận hàng (COD)</span>
+              </div>
+              <div class="thanks-info-item">
+                <small>Thời gian nhận dự kiến</small>
+                <span>2 - 4 ngày làm việc</span>
+              </div>
+              <div class="thanks-info-item">
+                <small>Trạng thái</small>
+                <div>
+                  <span class="thanks-badge-status">
+                    <i class="fas fa-clock"></i> Đang chuẩn bị hàng
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông báo lưu ý cho khách hàng -->
+          <div class="thanks-notice">
+            <i class="fas fa-info-circle"></i>
+            <div>
+              Nhân viên chăm sóc khách hàng của <strong>Laptopshop</strong> có thể sẽ gọi điện liên hệ để xác nhận đơn hàng trước khi gửi đi. Mọi nhu cầu hỗ trợ khẩn cấp, vui lòng liên hệ Hotline: <strong>1900 8888</strong>.
+            </div>
+          </div>
+
+          <!-- Nút điều hướng -->
+          <div class="thanks-actions">
+            <a href="/#san-pham" class="thanks-btn-primary">
+              <i class="fas fa-shopping-bag"></i>
+              Tiếp tục mua sắm
+            </a>
+            <a href="/" class="thanks-btn-outline">
+              <i class="fas fa-home"></i>
+              Về trang chủ
+            </a>
+          </div>
+
+          <!-- Các cam kết dịch vụ -->
+          <div class="thanks-support">
+            <div class="thanks-support-item">
+              <i class="fas fa-shield-alt"></i>
+              <span>100% Chính hãng &amp; Bảo hành toàn quốc</span>
+            </div>
+            <div class="thanks-support-item">
+              <i class="fas fa-sync-alt"></i>
+              <span>Đổi mới 1-1 trong 30 ngày nếu lỗi phần cứng</span>
+            </div>
+            <div class="thanks-support-item">
+              <i class="fas fa-headset"></i>
+              <span>Hỗ trợ kỹ thuật 24/7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../layout/footer') -%>
+
+    <a href="#" class="back-to-top" aria-label="Lên đầu trang">
+      <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/client/lib/easing/easing.min.js"></script>
+    <script src="/client/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/client/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Đăng nhập vào Laptopshop" />
+    <title>Đăng nhập | Laptopshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/client/css/style.css" rel="stylesheet" />
+    <link href="/client/css/modern.css" rel="stylesheet" />
+    <link href="/client/css/auth.css" rel="stylesheet" />
+  </head>
+  <body class="storefront auth-page">
+    <%- include('../client/layout/header') -%>
+    <main class="auth-main">
+      <div class="container">
+        <div class="auth-shell">
+          <aside class="auth-story" aria-label="Giới thiệu Laptopshop">
+            <div class="auth-story-content">
+              <span class="auth-story-kicker"><i class="fas fa-star" aria-hidden="true"></i> LAPTOPSHOP ACCOUNT</span>
+              <h2>Chào mừng bạn <span>quay trở lại.</span></h2>
+              <p>Đăng nhập để tiếp tục hành trình khám phá laptop cùng Laptopshop.</p>
+              <div class="auth-illustration" aria-hidden="true">
+                <div class="auth-illustration-ring"></div>
+                <div class="auth-illustration-card"><span><i class="fas fa-laptop"></i></span><div><strong>Không gian của bạn</strong><small>Tiếp tục từ nơi bạn dừng lại</small></div><i class="fas fa-arrow-up"></i></div>
+              </div>
+              <span class="auth-story-footnote">Dành cho thành viên và quản trị viên</span>
+            </div>
+          </aside>
+          <section class="auth-form-panel" aria-labelledby="login-title">
+            <div class="auth-form-wrap">
+              <span class="auth-form-kicker">ĐĂNG NHẬP TÀI KHOẢN</span>
+              <h1 id="login-title">Rất vui khi gặp lại bạn.</h1>
+              <p class="auth-form-intro">Nhập thông tin tài khoản để tiếp tục.</p>
+              <% if (typeof messages !== 'undefined' && Array.isArray(messages) && messages.length) { %>
+                <div class="auth-errors" role="alert" aria-live="polite">
+                  <strong>Vui lòng kiểm tra lại thông tin:</strong>
+                  <ul>
+                    <% messages.forEach((message) => { %>
+                      <li><%= message %></li>
+                    <% }); %>
+                  </ul>
+                </div>
+              <% } %>
+              <form class="auth-form" action="/login" method="post">
+                <div class="auth-field">
+                  <label for="login-username">Email</label>
+                  <div class="auth-input-wrap"><i class="fas fa-envelope" aria-hidden="true"></i><input id="login-username" name="username" type="email" value="<%= typeof oldData !== 'undefined' && oldData ? (oldData.username ?? '') : '' %>" placeholder="you@example.com" autocomplete="username" required /></div>
+                </div>
+                <div class="auth-field">
+                  <label for="login-password">Mật khẩu</label>
+                  <div class="auth-input-wrap"><i class="fas fa-lock" aria-hidden="true"></i><input id="login-password" name="password" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required /></div>
+                </div>
+                <button class="auth-submit" type="submit">Đăng nhập <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+              </form>
+              <p class="auth-switch">Chưa có tài khoản? <a href="/register">Tạo tài khoản mới <i class="fas fa-arrow-right" aria-hidden="true"></i></a></p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <%- include('../client/layout/footer') -%>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
