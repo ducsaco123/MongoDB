@@ -1,9 +1,10 @@
-import { prisma } from "config/client";
+import { getDB } from "config/database";
 
 const getDashboardInfo = async () => {
-  const countUser = await prisma.user.count();
-  const countProduct = await prisma.product.count();
-  const countOrder = await prisma.order.count();
+  const db = getDB();
+  const countUser = await db.collection("users").countDocuments();
+  const countProduct = await db.collection("products").countDocuments();
+  const countOrder = await db.collection("orders").countDocuments();
 
   return {
     countUser,

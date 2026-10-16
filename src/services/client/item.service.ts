@@ -1,26 +1,30 @@
-import { prisma } from "config/client";
-import { TOTAL_ITEMS_PER_PAGE } from "config/constant";
+import { getDB } from "config/database";
 
 const getProducts = async (page: number, pageSize: number) => {
+  const db = getDB();
   const skip = (page - 1) * pageSize;
-  const products = await prisma.product.findMany({
-    skip,
-    take: pageSize,
-  });
+  const products = await db
+    .collection("products")
+    .find({})
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
   return products;
 };
 
 const countTotalProductPages = async (pageSize: number) => {
-  const totalItem = await prisma.product.count();
+  const db = getDB();
+  const totalItem = await db.collection("products").countDocuments();
   const totalPages = Math.ceil(totalItem / pageSize);
 
   return totalPages;
 };
 
 const getProductById = async (productId: string) => {
-  const product = await prisma.product.findUnique({
-    where: { id: parseInt(productId) },
-  });
+  const db = getDB();
+  const product = await db
+    .collection("products")
+    .findOne({ id: parseInt(productId) });
   return product;
 };
 
@@ -29,86 +33,108 @@ const getProductToCart = async (
   productId: number,
   user: Express.User,
 ) => {
-  const cart = await prisma.cart.findUnique({
-    where: {
-      userId: user.id,
-    },
-  });
-
-  const product = await prisma.product.findUnique({
-    where: {
-      id: productId,
-    },
-  });
+  const db = getDB();
+  const cart = await db.collection("carts").findOne({ userId: user.id });
+  const product = await db.collection("products").findOne({ id: productId });
 
   if (cart) {
-    //update
-    await prisma.cart.update({
-      where: {
-        id: cart.id,
-      },
-      data: {
-        sum: {
-          increment: quantity,
-        },
-      },
+    // update cart sum
+    await db
+      .collection("carts")
+      .updateOne({ id: cart.id }, { $inc: { sum: quantity } });
+
+    // update or insert cartDetail
+    const currentCartDetail = await db.collection("cart_detail").findOne({
+      cartId: cart.id,
+      productId,
     });
 
-    //update + insert
-    const currentCardDetail = await prisma.cartDetail.findFirst({
-      where: {
-        cartId: cart.id,
-        productId,
-      },
-    });
-    await prisma.cartDetail.upsert({
-      where: {
-        id: currentCardDetail?.id ?? 0,
-      },
-      update: {
-        quantity: {
-          increment: quantity,
-        },
-      },
-      create: {
+    if (currentCartDetail) {
+      await db
+        .collection("cart_detail")
+        .updateOne(
+          { id: currentCartDetail.id },
+          { $inc: { quantity: quantity } },
+        );
+    } else {
+      const lastDetail = await db
+        .collection("cart_detail")
+        .find()
+        .sort({ id: -1 })
+        .limit(1)
+        .toArray();
+      const newId =
+        lastDetail.length > 0 && lastDetail[0].id ? lastDetail[0].id + 1 : 1;
+
+      await db.collection("cart_detail").insertOne({
+        id: newId,
         price: product?.price,
         quantity,
         productId,
         cartId: cart.id,
-      },
-    });
+      });
+    }
   } else {
-    //create
-    await prisma.cart.create({
-      data: {
-        sum: quantity,
-        userId: user.id,
-        cartDetails: {
-          create: [
-            {
-              price: product?.price,
-              quantity,
-              productId,
-            },
-          ],
-        },
-      },
+    // create new cart
+    const lastCart = await db
+      .collection("carts")
+      .find()
+      .sort({ id: -1 })
+      .limit(1)
+      .toArray();
+    const newCartId =
+      lastCart.length > 0 && lastCart[0].id ? lastCart[0].id + 1 : 1;
+
+    await db.collection("carts").insertOne({
+      id: newCartId,
+      sum: quantity,
+      userId: user.id,
+    });
+
+    const lastDetail = await db
+      .collection("cart_detail")
+      .find()
+      .sort({ id: -1 })
+      .limit(1)
+      .toArray();
+    const newDetailId =
+      lastDetail.length > 0 && lastDetail[0].id ? lastDetail[0].id + 1 : 1;
+
+    await db.collection("cart_detail").insertOne({
+      id: newDetailId,
+      price: product?.price,
+      quantity,
+      productId,
+      cartId: newCartId,
     });
   }
 };
 
 const getProductInCart = async (userId: number) => {
-  const cart = await prisma.cart.findUnique({
-    where: {
-      userId,
-    },
-  });
+  const db = getDB();
+  const cart = await db.collection("carts").findOne({ userId });
 
   if (cart) {
-    const currentCardDetail = await prisma.cartDetail.findMany({
-      where: { cartId: cart.id },
-      include: { product: true },
-    });
+    const currentCardDetail = await db
+      .collection("cart_detail")
+      .aggregate([
+        { $match: { cartId: cart.id } },
+        {
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "id",
+            as: "productList",
+          },
+        },
+        {
+          $addFields: {
+            product: { $arrayElemAt: ["$productList", 0] },
+          },
+        },
+        { $project: { productList: 0 } },
+      ])
+      .toArray();
     return currentCardDetail;
   }
   return [];
@@ -119,24 +145,19 @@ const deleteCartDetail = async (
   userId: number,
   sumCart: number,
 ) => {
-  const currentCardDetail = await prisma.cartDetail.delete({
-    where: { id },
-  });
+  const db = getDB();
+  const currentCardDetail = await db.collection("cart_detail").findOne({ id });
+
+  if (!currentCardDetail) return;
+  await db.collection("cart_detail").deleteOne({ id });
 
   const quantity = currentCardDetail.quantity;
   if (sumCart === 1) {
-    await prisma.cart.delete({
-      where: { userId },
-    });
+    await db.collection("carts").deleteOne({ userId });
   } else {
-    await prisma.cart.update({
-      where: { userId },
-      data: {
-        sum: {
-          decrement: quantity,
-        },
-      },
-    });
+    await db
+      .collection("carts")
+      .updateOne({ userId }, { $inc: { sum: -quantity } });
   }
 };
 
@@ -144,27 +165,20 @@ const updateCartDetailBeforeCheckout = async (
   data: { id: string; quantity: string }[],
   cartId: string,
 ) => {
+  const db = getDB();
   let quantity = 0;
 
   for (let i = 0; i < data.length; i++) {
     quantity += +data[i].quantity;
-    await prisma.cartDetail.update({
-      where: { id: +data[i].id },
-      data: {
-        quantity: +data[i].quantity,
-      },
-    });
+    await db
+      .collection("cart_detail")
+      .updateOne({ id: +data[i].id }, { $set: { quantity: +data[i].quantity } });
   }
 
-  //update cart sum
-  await prisma.cart.update({
-    where: {
-      id: +cartId,
-    },
-    data: {
-      sum: quantity,
-    },
-  });
+  // update cart sum
+  await db
+    .collection("carts")
+    .updateOne({ id: +cartId }, { $set: { sum: quantity } });
 };
 
 const handlePlaceOrder = async (
@@ -174,100 +188,160 @@ const handlePlaceOrder = async (
   receiverAddress: string,
   totalPrice: number,
 ) => {
+  const db = getDB();
   try {
-    //tạo transaction
-    await prisma.$transaction(async (tx) => {
-      const cart = await tx.cart.findUnique({
-        where: { userId },
-        include: {
-          cartDetails: true,
-        },
-      });
+    const cart = await db.collection("carts").findOne({ userId });
+    if (!cart) return "Giỏ hàng không tồn tại";
 
-      if (cart) {
-        //create order
-        const dataOrderDetail =
-          cart?.cartDetails?.map((item) => ({
-            price: item.price,
-            quantity: item.quantity,
-            productId: item.productId,
-          })) ?? [];
-        await tx.order.create({
-          data: {
-            receiverAddress,
-            receiverName,
-            receiverPhone,
-            paymentMethod: "COD",
-            paymentStatus: "PAYMENT_UNPAID",
-            status: "PENDING",
-            totalPrice,
-            userId,
-            orderDetails: {
-              create: dataOrderDetail,
-            },
-          },
-        });
+    const cartDetails = await db
+      .collection("cart_detail")
+      .find({ cartId: cart.id })
+      .toArray();
 
-        //remove cart detail + cart
-        await tx.cartDetail.deleteMany({
-          where: {
-            cartId: cart.id,
-          },
-        });
-
-        //remove cart
-        await tx.cart.delete({
-          where: { id: cart.id },
-        });
+    // Check product quantity
+    for (const item of cartDetails) {
+      const product = await db
+        .collection("products")
+        .findOne({ id: item.productId });
+      if (!product || product.quantity < item.quantity) {
+        return `Sản phẩm ${product?.name} không tồn tại hoặc không đủ số lượng.`;
       }
+    }
 
-      //check product
-      for (let i = 0; i < cart?.cartDetails.length; i++) {
-        const productId = cart?.cartDetails[i].productId;
-        const product = await tx.product.findUnique({
-          where: { id: productId },
-        });
-        if (!product || product.quantity < cart?.cartDetails[i].quantity) {
-          throw new Error(
-            `Sản phẩm ${product?.name} không tồn tại hoặc không đủ số lượng.`,
-          );
-        }
+    // Create order
+    const lastOrder = await db
+      .collection("orders")
+      .find()
+      .sort({ id: -1 })
+      .limit(1)
+      .toArray();
+    const newOrderId =
+      lastOrder.length > 0 && lastOrder[0].id ? lastOrder[0].id + 1 : 1;
 
-        await tx.product.update({
-          where: { id: productId },
-          data: {
-            quantity: {
-              decrement: cart?.cartDetails[i].quantity,
-            },
-            sold: {
-              increment: cart?.cartDetails[i].quantity,
-            },
-          },
-        });
-      }
+    await db.collection("orders").insertOne({
+      id: newOrderId,
+      receiverAddress,
+      receiverName,
+      receiverPhone,
+      paymentMethod: "COD",
+      paymentStatus: "PAYMENT_UNPAID",
+      status: "PENDING",
+      totalPrice: Number(totalPrice),
+      userId,
     });
 
+    // Create orderDetails
+    const lastDetail = await db
+      .collection("order_detail")
+      .find()
+      .sort({ id: -1 })
+      .limit(1)
+      .toArray();
+    let nextDetailId =
+      lastDetail.length > 0 && lastDetail[0].id ? lastDetail[0].id + 1 : 1;
+
+    const orderDetailsToInsert = cartDetails.map((item) => ({
+      id: nextDetailId++,
+      price: Number(item.price),
+      quantity: item.quantity,
+      productId: item.productId,
+      orderId: newOrderId,
+    }));
+
+    if (orderDetailsToInsert.length > 0) {
+      await db.collection("order_detail").insertMany(orderDetailsToInsert);
+    }
+
+    // Update product stock
+    for (const item of cartDetails) {
+      await db.collection("products").updateOne(
+        { id: item.productId },
+        {
+          $inc: {
+            quantity: -item.quantity,
+            sold: item.quantity,
+          },
+        },
+      );
+    }
+
+    // Remove cart & cartDetails
+    await db.collection("cart_detail").deleteMany({ cartId: cart.id });
+    await db.collection("carts").deleteOne({ id: cart.id });
+
     return "";
-  } catch (error) {
+  } catch (error: any) {
     return error.message;
   }
 };
 
 const getOrderHistory = async (userId: number) => {
-  const history = await prisma.order.findMany({
-    where: { userId },
-    include: {
-      orderDetails: {
-        include: { product: true },
+  const db = getDB();
+  const history = await db
+    .collection("orders")
+    .aggregate([
+      { $match: { userId } },
+      { $sort: { id: -1 } },
+      {
+        $lookup: {
+          from: "order_detail",
+          localField: "id",
+          foreignField: "orderId",
+          as: "orderDetails",
+        },
       },
-    },
-    orderBy: {
-      id: "desc",
-    },
-  });
+      {
+        $unwind: {
+          path: "$orderDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderDetails.productId",
+          foreignField: "id",
+          as: "orderDetails.product",
+        },
+      },
+      {
+        $addFields: {
+          "orderDetails.product": {
+            $arrayElemAt: ["$orderDetails.product", 0],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$id",
+          id: { $first: "$id" },
+          totalPrice: { $first: "$totalPrice" },
+          paymentMethod: { $first: "$paymentMethod" },
+          paymentStatus: { $first: "$paymentStatus" },
+          paymentRef: { $first: "$paymentRef" },
+          receiverAddress: { $first: "$receiverAddress" },
+          receiverName: { $first: "$receiverName" },
+          receiverPhone: { $first: "$receiverPhone" },
+          status: { $first: "$status" },
+          userId: { $first: "$userId" },
+          orderDetails: {
+            $push: {
+              $cond: [
+                { $ifNull: ["$orderDetails.id", false] },
+                "$orderDetails",
+                "$$REMOVE",
+              ],
+            },
+          },
+        },
+      },
+      { $sort: { id: -1 } },
+    ])
+    .toArray();
 
   return history ?? [];
 };
+
 export {
   getProducts,
   getProductById,

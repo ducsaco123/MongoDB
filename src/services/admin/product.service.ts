@@ -1,18 +1,22 @@
-import { prisma } from "config/client";
+import { getDB } from "config/database";
 import { TOTAL_ITEMS_PER_PAGE } from "config/constant";
 
 const getAllProducts = async (page: number) => {
+  const db = getDB();
   const pageSize = TOTAL_ITEMS_PER_PAGE;
   const skip = (page - 1) * pageSize;
-  const products = await prisma.product.findMany({
-    skip,
-    take: pageSize,
-  });
+  const products = await db
+    .collection("products")
+    .find({})
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
   return products;
 };
 
 const countTotalProductPages = async () => {
-  const totalItem = await prisma.product.count();
+  const db = getDB();
+  const totalItem = await db.collection("products").countDocuments();
   const pageSize = TOTAL_ITEMS_PER_PAGE;
   const totalPages = Math.ceil(totalItem / pageSize);
 
@@ -29,32 +33,45 @@ const handleCreateProduct = async (
   target: string,
   image: string,
 ) => {
-  const newProduct = await prisma.product.create({
-    data: {
-      name,
-      price,
-      ...(image && { image }),
-      detailDesc,
-      shortDesc,
-      quantity,
-      factory,
-      target,
-    },
-  });
+  const db = getDB();
+  const lastProd = await db
+    .collection("products")
+    .find()
+    .sort({ id: -1 })
+    .limit(1)
+    .toArray();
+  const newId =
+    lastProd.length > 0 && lastProd[0].id ? lastProd[0].id + 1 : 1;
+
+  const newProduct = {
+    id: newId,
+    name,
+    price: Number(price),
+    ...(image && { image }),
+    detailDesc,
+    shortDesc,
+    quantity: Number(quantity),
+    factory,
+    target,
+  };
+
+  await db.collection("products").insertOne(newProduct);
   return newProduct;
 };
 
 const handleDeleteProduct = async (productId: string) => {
-  const deletedProduct = await prisma.product.delete({
-    where: { id: parseInt(productId) },
-  });
+  const db = getDB();
+  const deletedProduct = await db
+    .collection("products")
+    .deleteOne({ id: parseInt(productId) });
   return deletedProduct;
 };
 
 const handleViewProduct = async (productId: string) => {
-  const product = await prisma.product.findUnique({
-    where: { id: parseInt(productId) },
-  });
+  const db = getDB();
+  const product = await db
+    .collection("products")
+    .findOne({ id: parseInt(productId) });
   return product;
 };
 
@@ -69,21 +86,27 @@ const handleUpdateProduct = async (
   target: string,
   image: string,
 ) => {
-  const updatedProduct = await prisma.product.update({
-    where: { id: parseInt(productId) },
-    data: {
-      name,
-      price,
-      ...(image && { image }),
-      detailDesc,
-      shortDesc,
-      quantity,
-      factory,
-      target,
-    },
-  });
+  const db = getDB();
+  const updateData: any = {
+    name,
+    price: Number(price),
+    detailDesc,
+    shortDesc,
+    quantity: Number(quantity),
+    factory,
+    target,
+  };
+  if (image) {
+    updateData.image = image;
+  }
+
+  const updatedProduct = await db
+    .collection("products")
+    .updateOne({ id: parseInt(productId) }, { $set: updateData });
+
   return updatedProduct;
 };
+
 export {
   getAllProducts,
   handleCreateProduct,

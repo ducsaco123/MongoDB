@@ -1,57 +1,57 @@
-import { prisma } from "config/client";
+import { getDB } from "config/database";
 import { hashPassword } from "services/user.service";
 import { ACCOUNT_TYPE } from "config/constant";
 
 const initDatabase = async () => {
-  const countUser = await prisma.user.count();
-  const countRole = await prisma.role.count();
-  const countProduct = await prisma.product.count();
+  const db = getDB();
+  const countUser = await db.collection("users").countDocuments();
+  const countRole = await db.collection("roles").countDocuments();
+  const countProduct = await db.collection("products").countDocuments();
 
   if (countRole === 0) {
-    await prisma.role.createMany({
-      data: [
-        {
-          name: "ADMIN",
-          description: "Admin thì full quyền",
-        },
-        {
-          name: "USER",
-          description: "User thông thường",
-        },
-      ],
-    });
+    await db.collection("roles").insertMany([
+      {
+        id: 1,
+        name: "ADMIN",
+        description: "Admin thì full quyền",
+      },
+      {
+        id: 2,
+        name: "USER",
+        description: "User thông thường",
+      },
+    ]);
   }
 
   if (countUser === 0) {
     const defaultPassword = await hashPassword("123456");
-    const adminRole = await prisma.role.findFirst({
-      where: { name: "ADMIN" },
-    });
+    const adminRole = await db.collection("roles").findOne({ name: "ADMIN" });
     if (adminRole) {
-      await prisma.user.createMany({
-        data: [
-          {
-            fullName: "Hỏi Dân IT",
-            username: "hoidanit@gmail.com",
-            password: defaultPassword,
-            accountType: ACCOUNT_TYPE.SYSTEM,
-            roleId: adminRole.id,
-          },
-          {
-            fullName: "Admin",
-            username: "admin@gmail.com",
-            password: defaultPassword,
-            accountType: ACCOUNT_TYPE.SYSTEM,
-            roleId: adminRole.id,
-          },
-        ],
-      });
+      await db.collection("users").insertMany([
+        {
+          id: 1,
+          fullName: "Hỏi Dân IT",
+          username: "hoidanit@gmail.com",
+          password: defaultPassword,
+          accountType: ACCOUNT_TYPE.SYSTEM,
+          roleId: adminRole.id,
+        },
+        {
+          id: 2,
+          fullName: "Admin",
+          username: "admin@gmail.com",
+          password: defaultPassword,
+          accountType: ACCOUNT_TYPE.SYSTEM,
+          roleId: adminRole.id,
+        },
+      ]);
     }
   }
 
   if (countProduct === 0) {
     const products = [
       {
+        id: 1,
         name: "Laptop Asus TUF Gaming",
         price: 17490000,
         detailDesc:
@@ -63,6 +63,7 @@ const initDatabase = async () => {
         image: "1711078092373-asus-01.png",
       },
       {
+        id: 2,
         name: "Laptop Dell Inspiron 15",
         price: 15490000,
         detailDesc:
@@ -74,6 +75,7 @@ const initDatabase = async () => {
         image: "1711078452562-dell-01.png",
       },
       {
+        id: 3,
         name: "Lenovo IdeaPad Gaming 3",
         price: 19500000,
         detailDesc:
@@ -85,6 +87,7 @@ const initDatabase = async () => {
         image: "1711079073759-lenovo-01.png",
       },
       {
+        id: 4,
         name: "Asus K501UX",
         price: 11900000,
         detailDesc:
@@ -96,6 +99,7 @@ const initDatabase = async () => {
         image: "1711079496409-asus-02.png",
       },
       {
+        id: 5,
         name: "MacBook Air 13",
         price: 17690000,
         detailDesc:
@@ -107,6 +111,7 @@ const initDatabase = async () => {
         image: "1711079954090-apple-01.png",
       },
       {
+        id: 6,
         name: "Laptop LG Gram Style",
         price: 31490000,
         detailDesc: "14.0 Chính: inch, 2880 x 1800 Pixels, OLED, 90 Hz, OLED",
@@ -117,6 +122,7 @@ const initDatabase = async () => {
         image: "1711080386941-lg-01.png",
       },
       {
+        id: 7,
         name: "MacBook Air 13",
         price: 24990000,
         detailDesc:
@@ -128,6 +134,7 @@ const initDatabase = async () => {
         image: "1711080787179-apple-02.png",
       },
       {
+        id: 8,
         name: "Laptop Acer Nitro",
         price: 23490000,
         detailDesc:
@@ -139,6 +146,7 @@ const initDatabase = async () => {
         image: "1711080948771-acer-01.png",
       },
       {
+        id: 9,
         name: "Laptop Acer Nitro V",
         price: 26999000,
         detailDesc:
@@ -150,6 +158,7 @@ const initDatabase = async () => {
         image: "1711081080930-asus-03.png",
       },
       {
+        id: 10,
         name: "Laptop Dell Latitude 3420",
         price: 21399000,
         detailDesc:
@@ -162,13 +171,11 @@ const initDatabase = async () => {
       },
     ];
 
-    await prisma.product.createMany({
-      data: products,
-    });
+    await db.collection("products").insertMany(products);
   }
 
   if (countRole !== 0 && countUser !== 0 && countProduct !== 0) {
-    console.log(">>> ALREADY INIT DATA...");
+    console.log(">>> [MongoDB] ALREADY INIT DATA...");
   }
 };
 

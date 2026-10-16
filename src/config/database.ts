@@ -1,17 +1,41 @@
-import mysql from "mysql2/promise";
+import { MongoClient, Db } from "mongodb";
+import "dotenv/config";
 
-// Create the connection to database
+const url =
+  process.env.MONGODB_URL ||
+  "mongodb://admin:123456@localhost:27017/nodejs?authSource=admin";
+const dbName = "nodejs";
 
-const getConnection = async () => {
-  const connection = await mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    user: "root",
-    password: "123456",
-    database: "nodejs",
-  });
+const client = new MongoClient(url, {
+  maxPoolSize: 20,
+  minPoolSize: 5,
+  serverSelectionTimeoutMS: 5000,
+});
 
-  return connection;
+let dbInstance: Db | null = null;
+
+const connectToMongoDB = async (): Promise<Db> => {
+  if (dbInstance) {
+    return dbInstance;
+  }
+
+  try {
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log(">>> [MongoDB] Connected successfully to database:", dbName);
+    dbInstance = client.db(dbName);
+    return dbInstance;
+  } catch (error) {
+    console.error(">>> [MongoDB] Connection error:", error);
+    throw error;
+  }
 };
 
-export default getConnection;
+export const getDB = (): Db => {
+  if (!dbInstance) {
+    throw new Error("Database not initialized! Call connectToMongoDB first.");
+  }
+  return dbInstance;
+};
+
+export default connectToMongoDB;

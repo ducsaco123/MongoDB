@@ -1,4 +1,4 @@
-import { prisma } from "config/client";
+import { getDB } from "config/database";
 import { ACCOUNT_TYPE } from "config/constant";
 import bcrypt from "bcrypt";
 import { comparePassword } from "services/user.service";
@@ -9,14 +9,9 @@ const hashPassword = async (plaintText: string) => {
 };
 
 const isEmailExist = async (email: string) => {
-  const user = await prisma.user.findUnique({
-    where: { username: email },
-  });
-
-  if (user) {
-    return true;
-  }
-  return false;
+  const db = getDB();
+  const user = await db.collection("users").findOne({ username: email });
+  return !!user;
 };
 
 const handleCreateAccount = async (
@@ -24,20 +19,27 @@ const handleCreateAccount = async (
   username: string,
   password: string,
 ) => {
-  password = await hashPassword(password);
-  const userRole = await prisma.role.findUnique({
-    where: { name: "USER" },
-  });
+  const db = getDB();
+  const hashedPassword = await hashPassword(password);
+  const userRole = await db.collection("roles").findOne({ name: "USER" });
 
   if (userRole) {
-    await prisma.user.create({
-      data: {
-        fullName,
-        username,
-        password: password,
-        accountType: ACCOUNT_TYPE.SYSTEM,
-        roleId: userRole.id, //Default role is user
-      },
+    const lastUser = await db
+      .collection("users")
+      .find()
+      .sort({ id: -1 })
+      .limit(1)
+      .toArray();
+    const newId =
+      lastUser.length > 0 && lastUser[0].id ? lastUser[0].id + 1 : 1;
+
+    await db.collection("users").insertOne({
+      id: newId,
+      fullName,
+      username,
+      password: hashedPassword,
+      accountType: ACCOUNT_TYPE.SYSTEM,
+      roleId: userRole.id,
     });
   } else {
     throw new Error("User role không tồn tại");
@@ -49,16 +51,14 @@ const handleLogin = async (
   password: string,
   callback: any,
 ) => {
-  //Check user exist in DB
-  const user = await prisma.user.findUnique({
-    where: { username },
-  });
+  const db = getDB();
+  const user = await db.collection("users").findOne({ username });
   if (!user) {
     return callback(null, false, {
       message: `Tài khoản/mật khẩu không chính xác`,
     });
   }
-  //compare password
+
   const isMatch = await comparePassword(password, user.password);
   if (!isMatch) {
     return callback(null, false, {
@@ -69,24 +69,22 @@ const handleLogin = async (
 };
 
 const getUserWithRoleById = async (userId: string) => {
-  const user = await prisma.user.findUnique({
-    where: { id: parseInt(userId) },
-    include: {
-      role: true,
-    },
-    omit: {
-      password: true,
-    },
-  });
-  return user;
+  const db = getDB();
+  const user = await db
+    .collection("users")
+    .findOne({ id: parseInt(userId) }, { projection: { password: 0 } });
+  if (!user) return null;
+
+  const role = await db.collection("roles").findOne({ id: user.roleId });
+  return { ...user, role };
 };
 
 const getUserSumCart = async (id: string) => {
-  const cart = await prisma.cart.findUnique({
-    where: { userId: parseInt(id) },
-  });
+  const db = getDB();
+  const cart = await db.collection("carts").findOne({ userId: parseInt(id) });
   return cart?.sum ?? 0;
 };
+
 export {
   handleCreateAccount,
   isEmailExist,

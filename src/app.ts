@@ -6,8 +6,8 @@ import initDatebase from "config/seed";
 import passport from "passport";
 import configPassportLocal from "./middleware/passport.local";
 import session from "express-session";
-import { PrismaSessionStore } from "@quixo3/prisma-session-store";
-import { PrismaClient } from "@prisma/client";
+import MongoStore from "connect-mongo";
+import connectToMongoDB from "config/database";
 import apiRoutes from "routes/api";
 import cors from "cors";
 
@@ -32,19 +32,20 @@ app.use(express.urlencoded({ extended: true }));
 //config static files: image, css, js
 app.use(express.static("public"));
 
-//config session
+//config session with MongoDB
 app.use(
   session({
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // ms
     },
     secret: "a santa at nasa",
-    resave: true,
-    saveUninitialized: true,
-    store: new PrismaSessionStore(new PrismaClient(), {
-      checkPeriod: 2 * 60 * 1000, //ms
-      dbRecordIdIsSessionId: true,
-      dbRecordIdFunction: undefined,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl:
+        process.env.MONGODB_URL ||
+        "mongodb://admin:123456@localhost:27017/nodejs?authSource=admin",
+      collectionName: "sessions",
     }),
   }),
 );
@@ -67,13 +68,22 @@ webRoutes(app);
 apiRoutes(app);
 
 //seeding data
-initDatebase();
+// initDatebase();
 
 //handle 404 not found
 app.use((req, res) => {
   res.status(404).render("status/404.ejs");
 });
-app.listen(port, () => {
-  console.log(`My app is running on port: ${port}`);
-  console.log("env port: ", process.env.PORT);
-});
+
+(async () => {
+  try {
+    await connectToMongoDB();
+    await initDatebase();
+    app.listen(port, () => {
+      console.log(`My app is running on port: ${port}`);
+      console.log("env port: ", process.env.PORT);
+    });
+  } catch (error) {
+    console.error(">>> Server failed to start:", error);
+  }
+})();

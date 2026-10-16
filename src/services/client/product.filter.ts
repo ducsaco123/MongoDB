@@ -1,4 +1,4 @@
-import { prisma } from "config/client";
+import { getDB } from "config/database";
 
 const getProductWithFilter = async (
   page: number,
@@ -8,21 +8,17 @@ const getProductWithFilter = async (
   price: string,
   sort: string,
 ) => {
-  //build where query
-  let whereClause: any = {};
+  const db = getDB();
+  const query: any = {};
 
   if (factory) {
     const factoryInput = factory.split(",");
-    whereClause.factory = {
-      in: factoryInput,
-    };
+    query.factory = { $in: factoryInput };
   }
 
   if (target) {
     const targetInput = target.split(",");
-    whereClause.target = {
-      in: targetInput,
-    };
+    query.target = { $in: targetInput };
   }
 
   if (price) {
@@ -30,42 +26,41 @@ const getProductWithFilter = async (
     const priceCondition = [];
     for (let i = 0; i < priceInput.length; i++) {
       if (priceInput[i] === "duoi-10-trieu") {
-        priceCondition.push({ price: { lt: 10000000 } });
+        priceCondition.push({ price: { $lt: 10000000 } });
       } else if (priceInput[i] === "10-15-trieu") {
-        priceCondition.push({ price: { gte: 10000000, lte: 15000000 } });
+        priceCondition.push({ price: { $gte: 10000000, $lte: 15000000 } });
       } else if (priceInput[i] === "15-20-trieu") {
-        priceCondition.push({ price: { gte: 15000000, lte: 20000000 } });
+        priceCondition.push({ price: { $gte: 15000000, $lte: 20000000 } });
       } else {
-        priceCondition.push({ price: { gte: 20000000 } });
+        priceCondition.push({ price: { $gte: 20000000 } });
       }
     }
-    whereClause.OR = priceCondition;
+    query.$or = priceCondition;
   }
 
-  //build sort query
-  let orderByClause: any = {};
+  let sortOption: any = {};
   if (sort) {
     if (sort === "gia-tang-dan") {
-      orderByClause = { price: "asc" };
-    }
-    if (sort === "gia-giam-dan") {
-      orderByClause = { price: "desc" };
+      sortOption = { price: 1 };
+    } else if (sort === "gia-giam-dan") {
+      sortOption = { price: -1 };
     }
   }
 
   const skip = (page - 1) * pageSize;
 
-  const [products, count] = await prisma.$transaction([
-    prisma.product.findMany({
-      skip,
-      take: pageSize,
-      where: whereClause,
-      orderBy: orderByClause,
-    }),
-    prisma.product.count({ where: whereClause }),
-  ]);
+  const products = await db
+    .collection("products")
+    .find(query)
+    .sort(sortOption)
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
 
+  const count = await db.collection("products").countDocuments(query);
   const totalPages = Math.ceil(count / pageSize);
+
   return { products, totalPages };
 };
+
 export { getProductWithFilter };
